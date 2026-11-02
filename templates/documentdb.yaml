@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: DocumentDB cluster with one instance.
+Parameters:
+  ClusterIdentifier:
+    Type: String
+    Default: appdocdb
+  MasterUsername:
+    Type: String
+    Default: docdbadmin
+  MasterPassword:
+    Type: String
+    NoEcho: true
+  InstanceClass:
+    Type: String
+    Default: db.r6g.large
+  SubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+Resources:
+  DBSubnetGroup:
+    Type: AWS::DocDB::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnets for the DocumentDB cluster
+      SubnetIds: !Ref SubnetIds
+  DBCluster:
+    Type: AWS::DocDB::DBCluster
+    Properties:
+      DBClusterIdentifier: !Ref ClusterIdentifier
+      Engine: docdb
+      MasterUsername: !Ref MasterUsername
+      MasterUserPassword: !Ref MasterPassword
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      BackupRetentionPeriod: 7
+      StorageEncrypted: true
+  DBInstance:
+    Type: AWS::DocDB::DBInstance
+    Properties:
+      DBClusterIdentifier: !Ref DBCluster
+      DBInstanceClass: !Ref InstanceClass
+Outputs:
+  ClusterEndpoint:
+    Description: Cluster endpoint
+    Value: !GetAtt DBCluster.Endpoint

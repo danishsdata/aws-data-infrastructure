@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Aurora PostgreSQL cluster with one writer and one reader.
+Parameters:
+  DBName:
+    Type: String
+    Default: appdb
+  MasterUsername:
+    Type: String
+    Default: dbadmin
+  MasterPassword:
+    Type: String
+    NoEcho: true
+  EngineVersion:
+    Type: String
+    Default: "15.4"
+  InstanceClass:
+    Type: String
+    Default: db.r6g.large
+  SubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+Resources:
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnets for the Aurora cluster
+      SubnetIds: !Ref SubnetIds
+  DBCluster:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      Engine: aurora-postgresql
+      EngineVersion: !Ref EngineVersion
+      DatabaseName: !Ref DBName
+      MasterUsername: !Ref MasterUsername
+      MasterUserPassword: !Ref MasterPassword
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      BackupRetentionPeriod: 7
+      StorageEncrypted: true
+  DBWriter:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBClusterIdentifier: !Ref DBCluster
+      DBInstanceClass: !Ref InstanceClass
+      Engine: aurora-postgresql
+  DBReader:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBClusterIdentifier: !Ref DBCluster
+      DBInstanceClass: !Ref InstanceClass
+      Engine: aurora-postgresql
+Outputs:
+  ClusterEndpoint:
+    Description: Writer endpoint
+    Value: !GetAtt DBCluster.Endpoint
+  ReaderEndpoint:
+    Description: Reader endpoint
+    Value: !GetAtt DBCluster.ReadEndpoint

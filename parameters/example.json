@@ -1,0 +1,1 @@
+[{"ParameterKey":"DBName","ParameterValue":"appdb"},{"ParameterKey":"MasterUsername","ParameterValue":"dbadmin"},{"ParameterKey":"SubnetIds","ParameterValue":"<SUBNET_ID_1>,<SUBNET_ID_2>"}]

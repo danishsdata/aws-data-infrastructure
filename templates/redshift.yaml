@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Redshift cluster for analytics workloads.
+Parameters:
+  ClusterIdentifier:
+    Type: String
+    Default: analytics
+  NodeType:
+    Type: String
+    Default: ra3.xlplus
+  NumberOfNodes:
+    Type: Number
+    Default: 2
+  DBName:
+    Type: String
+    Default: analytics
+  MasterUsername:
+    Type: String
+    Default: rsadmin
+  MasterPassword:
+    Type: String
+    NoEcho: true
+  SubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+Resources:
+  ClusterSubnetGroup:
+    Type: AWS::Redshift::ClusterSubnetGroup
+    Properties:
+      Description: Subnets for the Redshift cluster
+      SubnetIds: !Ref SubnetIds
+  Cluster:
+    Type: AWS::Redshift::Cluster
+    Properties:
+      ClusterIdentifier: !Ref ClusterIdentifier
+      ClusterType: multi-node
+      DBName: !Ref DBName
+      MasterUsername: !Ref MasterUsername
+      MasterUserPassword: !Ref MasterPassword
+      NodeType: !Ref NodeType
+      NumberOfNodes: !Ref NumberOfNodes
+      ClusterSubnetGroupName: !Ref ClusterSubnetGroup
+      Encrypted: true
+      PubliclyAccessible: false
+      AutomatedSnapshotRetentionPeriod: 7
+Outputs:
+  EndpointAddress:
+    Description: Cluster endpoint address
+    Value: !GetAtt Cluster.Endpoint.Address
+  EndpointPort:
+    Description: Cluster endpoint port
+    Value: !GetAtt Cluster.Endpoint.Port
